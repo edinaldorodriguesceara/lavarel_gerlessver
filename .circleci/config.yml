@@ -16,6 +16,12 @@ jobs:
       - checkout
 
       - run:
+          name: Copy .env file
+          command: |
+            cp .env .env.ci
+            sed -i 's/APP_ENV=.*/APP_ENV=testing/' .env.ci
+
+      - run:
           name: Build
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
@@ -44,10 +50,8 @@ jobs:
             - ./vendor
 
       - run:
-          name: Generate Application Key
-          command: |
-            docker compose exec app php artisan key:generate --force
-            docker compose exec app php artisan config:clear
+          name: Clear Config Cache
+          command: docker compose exec app php artisan config:clear
 
       - run:
           name: Test
