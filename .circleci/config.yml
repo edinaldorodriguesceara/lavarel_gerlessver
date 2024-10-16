@@ -16,43 +16,40 @@ jobs:
       - checkout
 
       - run:
-          name: Copy .env file
+          name: Create .env file for CI
           command: |
-            cp .env .env.ci
-            sed -i 's/APP_ENV=.*/APP_ENV=testing/' .env.ci
+            cp .env.example .env
+            echo "APP_KEY=" >> .env
 
       - run:
-          name: Build
+          name: Build and Start Services
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
-
-      - restore_cache:
-          name: Restore Cache
-          key: '{{ checksum "composer.lock" }}'
+            docker compose up -d
 
       - run:
-          name: Up
-          command: docker compose up -d
+          name: Check Docker Host
+          command: |
+            docker compose exec app bash -c "cat /etc/hosts | grep dockerhost"
 
       - run:
-          name: Install PHP dependencies
-          command: docker compose exec app composer install
+          name: Install Dependencies
+          command: |
+            docker compose exec app composer install
+            docker compose exec app npm install
 
       - run:
-          name: Npm Install
-          command: docker compose exec app npm install
-
-      - save_cache:
-          name: Save Cache
-          key: '{{ checksum "composer.lock" }}'
-          paths:
-            - ./vendor
+          name: Generate App Key
+          command: |
+            docker compose exec app php artisan key:generate --force
+            docker compose exec app php artisan config:clear
 
       - run:
-          name: Clear Config Cache
-          command: docker compose exec app php artisan config:clear
+          name: Run Tests
+          command: docker compose exec app php artisan test
 
       - run:
-          name: Test
-          command: docker compose exec -e APP_ENV=testing app php artisan test
+          name: Start Laravel Server
+          command: docker compose exec app php artisan serve
+          background: true
