@@ -34,8 +34,9 @@ jobs:
           command: docker compose exec app composer install
 
       - run:
-          name: Generate APP_KEY
-          command: docker compose exec app php artisan key:generate --force
+          name: Set APP_KEY
+          command: |
+            echo "APP_KEY=${APP_KEY}" >> .env
 
       - run:
           name: Npm Install
