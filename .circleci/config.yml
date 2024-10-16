@@ -15,18 +15,26 @@ jobs:
     steps:
       - checkout
 
+     
       - run:
-          name: Create .env file for CI
+          name: Create .env 
           command: |
             cp .env.example .env
             echo "APP_KEY=" >> .env
 
       - run:
-          name: Build and Start Services
+          name: Build
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
-            docker compose up -d
+
+      - restore_cache:
+          name: Restore Cache
+          key: '{{ checksum "composer.lock" }}'
+
+      - run:
+          name: Up
+          command: docker compose up -d
 
       - run:
           name: Check Docker Host
@@ -34,10 +42,18 @@ jobs:
             docker compose exec app bash -c "cat /etc/hosts | grep dockerhost"
 
       - run:
-          name: Install Dependencies
-          command: |
-            docker compose exec app composer install
-            docker compose exec app npm install
+          name: Install PHP dependencies
+          command: docker compose exec app composer install
+
+      - run:
+          name: Npm Install
+          command: docker compose exec app npm install
+
+      - save_cache:
+          name: Save Cache
+          key: '{{ checksum "composer.lock" }}'
+          paths:
+            - ./vendor
 
       - run:
           name: Generate App Key
@@ -46,5 +62,5 @@ jobs:
             docker compose exec app php artisan config:clear
 
       - run:
-          name: Run Tests
-          command: docker compose exec app php artisan test
+          name: Test
+          command: docker compose exec  app php artisan test
