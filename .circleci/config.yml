@@ -19,26 +19,36 @@ jobs:
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
+
       - restore_cache:
           name: Restore Cache
           key: '{{ checksum "composer.lock" }}'
+
       - run:
           name: Up
           command: docker compose up -d
+
+      
       - run:
-          name: Dependency
-          command: composer install
+          name: Install PHP dependencies
+          command: docker compose exec app composer install
+
+     
       - run:
-          name: Npm
-          command: npm install  
+          name: Npm Install
+          command: docker compose exec app npm install  
+
       - run:
           name: Up Server
           command: docker compose exec app php artisan serve
+
       - save_cache:
           name: Save Cache
           key: '{{ checksum "composer.lock" }}'
           paths:
             - vendor
+
+     
       - run:
-          name: Test
-          command: app php artisan test
+          name: Run Tests
+          command: docker compose exec app php artisan test
