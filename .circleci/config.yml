@@ -26,6 +26,9 @@ jobs:
           name: Up
           command: docker compose up -d
       - run:
+          name: Dependency
+          command: composer install
+      - run:
           name: Up Server
           command: docker compose exec app php artisan serve
       - save_cache:
