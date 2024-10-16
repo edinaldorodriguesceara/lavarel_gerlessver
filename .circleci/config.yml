@@ -16,34 +16,37 @@ jobs:
       - checkout
 
       - run:
-          name: Build Configuration
+          name: Build
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
-            
+
+      - restore_cache:
+          name: Restore Cache
+          key: '{{ checksum "composer.lock" }}'
+
       - run:
-          name: Up Services
+          name: Up
           command: docker compose up -d
 
       - run:
-          name: Install Laravel Installer
-          command: docker compose exec app composer global require laravel/installer
-
-      - run:
-          name: Generate Key
-          command: docker compose exec app php artisan key:generate --force
-
-      - run:
-          name:  Dependencies
+          name: Install PHP dependencies
           command: docker compose exec app composer install
 
       - run:
-          name: Npm
-          command: docker compose exec app npm init -y
+          name: Generate APP_KEY
+          command: docker compose exec app php artisan key:generate --force
 
       - run:
-          name: Tests
+          name: Npm Install
+          command: docker compose exec app npm install  
+
+      - save_cache:
+          name: Save Cache
+          key: '{{ checksum "composer.lock" }}'
+          paths:
+            - vendor
+
+      - run:
+          name: Test
           command: docker compose exec app php artisan test
-
-
-
