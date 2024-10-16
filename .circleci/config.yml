@@ -19,28 +19,31 @@ jobs:
           name: Build Configuration
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
-
-      - run:
-          name: Build Docker Images
-          command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
-
+            
       - run:
           name: Up Services
           command: docker compose up -d
 
       - run:
-          name: Exec into App Container
+          name: Install Laravel Installer
+          command: docker compose exec app composer global require laravel/installer
+
+      - run:
+          name: Create New Laravel Project
           command: |
-            docker compose exec app bash -c "cat /etc/hosts | grep dockerhost"
+            docker compose exec app bash -c "laravel new $(basename $PWD) && \
+            mv $(basename $PWD)/* . && \
+            mv $(basename $PWD)/.[^.]* . && \
+            rm -rf $(basename $PWD)"
 
       - run:
           name: Install Composer Dependencies
           command: docker compose exec app composer install
 
       - run:
-          name: Install NPM Dependencies
-          command: docker compose exec app npm install
+          name: Initialize NPM
+          command: docker compose exec app npm init -y
 
       - run:
           name: Run Tests
