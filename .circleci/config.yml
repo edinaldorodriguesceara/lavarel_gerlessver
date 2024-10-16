@@ -30,6 +30,10 @@ jobs:
           command: docker compose exec app composer global require laravel/installer
 
       - run:
+          name: Generate Key
+          command: docker compose exec app php artisan key:generate --force
+
+      - run:
           name:  Dependencies
           command: docker compose exec app composer install
 
@@ -41,6 +45,5 @@ jobs:
           name: Tests
           command: docker compose exec app php artisan test
 
-      - run:
-          name: Start Server
-          command: docker compose exec app php artisan serve 
+
+
