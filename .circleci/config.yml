@@ -38,9 +38,6 @@ jobs:
           name: Npm Install
           command: docker compose exec app npm install  
 
-      - run:
-          name: Up Server
-          command: docker compose exec app php artisan serve
 
       - save_cache:
           name: Save Cache
