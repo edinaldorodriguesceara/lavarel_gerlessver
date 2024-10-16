@@ -27,9 +27,7 @@ jobs:
           command: docker compose up -d
       - run:
           name: Up Server
-          command: | 
-              docker compose exec app 
-              php artisan serve
+          command: docker compose exec app php artisan serve
       - save_cache:
           name: Save Cache
           key: '{{ checksum "composer.lock" }}'
