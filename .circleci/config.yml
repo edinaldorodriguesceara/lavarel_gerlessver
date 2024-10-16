@@ -37,16 +37,11 @@ jobs:
           command: docker compose up -d
 
       - run:
-          name: Check Docker Host
-          command: |
-            docker compose exec app bash -c "cat /etc/hosts | grep dockerhost"
-
-      - run:
-          name: Install PHP dependencies
+          name: Dependencies
           command: docker compose exec app composer install
 
       - run:
-          name: Npm Install
+          name: Npm 
           command: docker compose exec app npm install
 
       - save_cache:
