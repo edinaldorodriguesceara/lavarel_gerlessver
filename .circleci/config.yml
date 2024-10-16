@@ -14,38 +14,38 @@ jobs:
     working_directory: ~/lavarel_gerlessver
     steps:
       - checkout
+
       - run:
-          name: Build
+          name: Build Configuration
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
+
+      - run:
+          name: Build Docker Images
+          command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
 
-      - restore_cache:
-          name: Restore Cache
-          key: '{{ checksum "composer.lock" }}'
-
       - run:
-          name: Up
+          name: Up Services
           command: docker compose up -d
 
-      
       - run:
-          name: Install PHP dependencies
+          name: Exec into App Container
+          command: |
+            docker compose exec app bash -c "cat /etc/hosts | grep dockerhost"
+
+      - run:
+          name: Install Composer Dependencies
           command: docker compose exec app composer install
 
-     
       - run:
-          name: Npm Install
-          command: docker compose exec app npm install  
+          name: Install NPM Dependencies
+          command: docker compose exec app npm install
 
-
-      - save_cache:
-          name: Save Cache
-          key: '{{ checksum "composer.lock" }}'
-          paths:
-            - vendor
-
-     
       - run:
-          name: Test
+          name: Run Tests
           command: docker compose exec app php artisan test
+
+      - run:
+          name: Start Laravel Server
+          command: docker compose exec app php artisan serve 
