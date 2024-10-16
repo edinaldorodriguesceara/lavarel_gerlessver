@@ -48,8 +48,3 @@ jobs:
       - run:
           name: Run Tests
           command: docker compose exec app php artisan test
-
-      - run:
-          name: Start Laravel Server
-          command: docker compose exec app php artisan serve
-          background: true
