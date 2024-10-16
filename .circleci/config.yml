@@ -34,11 +34,6 @@ jobs:
           command: docker compose exec app composer install
 
       - run:
-          name: Set APP_KEY
-          command: |
-            echo "APP_KEY=${APP_KEY}" >> .env
-
-      - run:
           name: Npm Install
           command: docker compose exec app npm install  
 
@@ -46,7 +41,7 @@ jobs:
           name: Save Cache
           key: '{{ checksum "composer.lock" }}'
           paths:
-            - vendor
+            - ./vendor
 
       - run:
           name: Test
