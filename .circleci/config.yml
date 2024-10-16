@@ -35,7 +35,7 @@ jobs:
 
       - run:
           name: Npm Install
-          command: docker compose exec app npm install  
+          command: docker compose exec app npm install
 
       - save_cache:
           name: Save Cache
@@ -44,5 +44,11 @@ jobs:
             - ./vendor
 
       - run:
+          name: Generate Application Key
+          command: |
+            docker compose exec app php artisan key:generate --force
+            docker compose exec app php artisan config:clear
+
+      - run:
           name: Test
-          command: docker compose exec app php artisan test
+          command: docker compose exec -e APP_ENV=testing app php artisan test
