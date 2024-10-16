@@ -26,13 +26,15 @@ jobs:
           name: Up
           command: docker compose up -d
       - run:
-          name: Bundle
-          command: docker compose exec app php artisan serve
+          name: Up Server
+          command: | 
+              docker compose exec app 
+              php artisan serve
       - save_cache:
           name: Save Cache
           key: '{{ checksum "composer.lock" }}'
           paths:
-            - tmp
+            - vendor
       - run:
           name: Test
           command: app php artisan test
