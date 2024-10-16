@@ -30,25 +30,17 @@ jobs:
           command: docker compose exec app composer global require laravel/installer
 
       - run:
-          name: Create New Laravel Project
-          command: |
-            docker compose exec app bash -c "laravel new $(basename $PWD) && \
-            mv $(basename $PWD)/* . && \
-            mv $(basename $PWD)/.[^.]* . && \
-            rm -rf $(basename $PWD)"
-
-      - run:
-          name: Install Composer Dependencies
+          name:  Dependencies
           command: docker compose exec app composer install
 
       - run:
-          name: Initialize NPM
+          name: Npm
           command: docker compose exec app npm init -y
 
       - run:
-          name: Run Tests
+          name: Tests
           command: docker compose exec app php artisan test
 
       - run:
-          name: Start Laravel Server
+          name: Start Server
           command: docker compose exec app php artisan serve 
