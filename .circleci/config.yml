@@ -38,11 +38,9 @@ jobs:
 
       - run:
           name: Dependencies
-          command: docker compose exec app composer install
-
-      - run:
-          name: Npm 
-          command: docker compose exec app npm install
+          command: | 
+            docker compose exec app composer install
+            docker compose exec app npm install
 
       - save_cache:
           name: Save Cache
