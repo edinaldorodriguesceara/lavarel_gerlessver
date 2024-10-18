@@ -4,7 +4,6 @@ workflows:
   ci:
     jobs:
       - back
-
 jobs:
   back:
     machine:
@@ -14,46 +13,37 @@ jobs:
     working_directory: ~/lavarel_gerlessver
     steps:
       - checkout
-
-     
       - run:
           name: Create .env 
           command: |
             cp .env.example .env
             echo "APP_KEY=" >> .env
-
       - run:
           name: Build
           command: |
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose config
             ARG_USER_UID=$(id -u) ARG_USER_GID=$(id -g) docker compose build
-
       - restore_cache:
           name: Restore Cache
           key: '{{ checksum "composer.lock" }}'
-
       - run:
           name: Up
           command: docker compose up -d
-
       - run:
           name: Dependencies
           command: | 
             docker compose exec app composer install
             docker compose exec app npm install
-
       - save_cache:
           name: Save Cache
           key: '{{ checksum "composer.lock" }}'
           paths:
             - ./vendor
-
       - run:
           name: Generate App Key
           command: |
             docker compose exec app php artisan key:generate --force
             docker compose exec app php artisan config:clear
-
       - run:
           name: Test
           command: docker compose exec  app php artisan test
